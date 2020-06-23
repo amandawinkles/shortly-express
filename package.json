@@ -15,20 +15,27 @@
     "lint": "eslint ./"
   },
   "dependencies": {
+    "backbone": "^1.4.0",
     "bluebird": "^3.3.4",
     "body-parser": "^1.15.0",
+    "cookie-parser": "^1.4.5",
     "ejs": "^2.4.1",
     "express": "^4.13.4",
     "express-partials": "^0.3.0",
+    "express-session": "^1.17.1",
+    "express-static": "^1.2.6",
+    "jquery": "^3.5.1",
     "lodash": "^4.17.4",
     "mysql": "^2.12.0",
     "node-mocks-http": "^1.6.1",
-    "request": "^2.34.0"
+    "request": "^2.34.0",
+    "underscore": "^1.10.2"
   },
   "devDependencies": {
     "chai": "^3.5.0",
     "eslint-config-hackreactor": "git://github.com/reactorcore/eslint-config-hackreactor",
     "jsdoc": "^3.5.3",
-    "mocha": "^2.4.5"
+    "mocha": "^2.4.5",
+    "nodemon": "^2.0.4"
   }
 }
