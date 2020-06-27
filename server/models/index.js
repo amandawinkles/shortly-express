@@ -1,5 +1,8 @@
 //Getting instructions from controllers/index.js and processing those requests by querying the DB and then returning to controller/index.js
 
+
+
+
 // var db = require('../db');
 // var Promise = require('bluebird');
 
@@ -145,6 +148,8 @@
 //     }
 //   }
 // };
+
+
 
 
 module.exports.Links = require('./link');
