@@ -2,14 +2,14 @@ const models = require('../models');
 const Promise = require('bluebird');
 
 module.exports.createSession = (req, res, next) => {
-  //console.log('SHORTLY :', req.cookies.shortlyId);
-  console.log('REQ :', req);
-  console.log('COOKIES :', req.headers.cookie);
-  console.log('REQSESSION: ', req.session);
+  //console.log('SHORTLY :', req.cookies.shortlyid);
+  //console.log('REQ :', req);
+  console.log('AUTH Finished');
   next();
 
-
   //get parsed cookie
+  console.log('COOKIES :', req.cookies);
+
   //check if there is a session hash - if no, or if invalid create hash, send to server in req and res objects
   //if valid hash - send to server in req and res objects
 };
