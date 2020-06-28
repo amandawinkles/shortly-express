@@ -2,13 +2,41 @@ const models = require('../models');
 const Promise = require('bluebird');
 
 module.exports.createSession = (req, res, next) => {
-  //console.log('SHORTLY :', req.cookies.shortlyid);
-  //console.log('REQ :', req);
-  console.log('AUTH Finished');
+  //Find out if there's a hash in the cookie
+    //Check if req.cookies.shortlyId exists
+    if (req.cookies.shortlyId) {
+      //if it exists set sessionHash to shortlyId value
+      let hash = req.cookies.shortlyId;
+      // get hash from models.Sessions (returns promise)
+      models.Sessions.get({ hash })
+        .then((session) => {
+          if (session) {
+            req.session = session;
+            let test = res.cookie('shortlyId', req.session.hash);
+            console.log(test);
+          }
+          //if session exists get userId
+        })
+      }
+
+        //.then(session)
+          //req.session = session
+          //res.cookie('shortlyId', req.session.hash)
+          //set id to session.userId
+          //if id exists then set req.session.userId to id
+          //get id from users table (returns promise)
+            //then(userData)
+              //set req.session.user to object with k/v pair username: userData.username
+
+    //if it doesnt exist create a session (models.sessions.create())
+
+
+
+
+
   next();
 
   //get parsed cookie
-  console.log('COOKIES :', req.cookies);
 
   //check if there is a session hash - if no, or if invalid create hash, send to server in req and res objects
   //if valid hash - send to server in req and res objects
