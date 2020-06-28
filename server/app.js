@@ -22,23 +22,29 @@ app.use(Auth.createSession);
 
 app.get('/',
   (req, res) => {
-    res.render('index');
+    Auth.verifySession.call(this, req, res, () =>
+      res.render('index')
+    );
   });
 
 app.get('/create',
   (req, res) => {
-    res.render('index');
+    Auth.verifySession.call(this, req, res, () =>
+      res.render('index')
+    );
   });
 
 app.get('/links',
   (req, res, next) => {
-    models.Links.getAll()
-      .then(links => {
-        res.status(200).send(links);
-      })
-      .error(error => {
-        res.status(500).send(error);
-      });
+    Auth.verifySession.call(this, req, res, () => {
+      models.Links.getAll()
+        .then(links => {
+          res.status(200).send(links);
+        })
+        .error(error => {
+          res.status(500).send(error);
+        });
+    });
   });
 
 app.post('/links',
@@ -86,18 +92,18 @@ app.get('/signup', (req, res) => {
   res.render('signup');
 });
 
-//**************************** */
-//TEST DELETE THIS
-//// parseCookies
+// //**************************** */
+// //TEST DELETE THIS
+// //// parseCookies
 
-app.get('/testcookie', (req, res, next) => {
-  Auth.createSession(req, res, next);
+// app.get('/testcookie', (req, res, next) => {
+//   Auth.createSession(req, res, next);
 
-  //module.exports.createSession
+//   //module.exports.createSession
 
-});
+// });
 
-//**************************** */
+// //**************************** */
 
 app.post('/signup', (req, res, next) => {
   let username = req.body.username;
@@ -106,6 +112,9 @@ app.post('/signup', (req, res, next) => {
     .then((user) => {
       if (!user) {
         return models.Users.create({ username, password })
+          .then((data) => {
+            return models.Sessions.update({id: req.session.id}, {userId: data.insertId});
+          })
           .then((user) => {
             res.redirect('/');
             //models.Sessions.create();
@@ -132,7 +141,7 @@ app.post('/login', (req, res) => {
     .then((user) => {
       if (user) {
         if (models.Users.compare(password, user.password, user.salt)) {
-          res.redirect('/');
+          res.status(200).redirect('/');
         } else {
           //returns boolean true if passwords match.
           //if user doesn't exist, skip over then block below
@@ -141,6 +150,17 @@ app.post('/login', (req, res) => {
       } else {
         res.redirect('/login');
       }
+    });
+});
+
+app.get('/logout', (req, res, next) => {
+  //models.Sessions.delete()
+  let hash = req.cookies.shortlyid;
+  return models.Sessions.delete({ hash })
+    .then(() => {
+      res.cookie('shortlyid');
+      req.session.userId = null;
+      res.redirect('/login');
     });
 });
 

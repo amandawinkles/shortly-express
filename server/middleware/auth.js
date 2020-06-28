@@ -7,7 +7,7 @@ module.exports.createSession = (req, res, next) => {
   //creates a new hash for each new session
   let hash = req.cookies.shortlyid;
   if (hash) {
-    models.Sessions.get({ hash })
+    return models.Sessions.get({ hash })
       .then((session) => {
         if (session) {
           //assigns a session object to the request if a session already exists
@@ -19,10 +19,13 @@ module.exports.createSession = (req, res, next) => {
           let id = session.userId; //not null when session is assigned to user
           if (id) {
             req.session.userId = id;
-            models.Users.get({ id })
+            return models.Users.get({ id })
               .then((user) => {
+                console.log('userrrrrrrrrrr <3', user);
+                console.log('--session.user--', req.session.user);
                 //username connected to id of session
-                req.session.user = { username: user.username };
+                req.session.user = {username: user.username};
+                console.log('-2-session.user-2-', req.session.user);
                 next();
               });
           } else { // when userId is null
@@ -50,7 +53,7 @@ module.exports.createSession = (req, res, next) => {
     //if it doesnt exist create a session (models.sessions.create())
     models.Sessions.create()
       .then((data) => {
-        console.log('data after creating session', data);
+        //console.log('data after creating session', data);
         //assigns a username and userId property to the session object if the session is assigned to a user
         let id = data.insertId;
         return models.Sessions.get({ id });
@@ -96,5 +99,13 @@ module.exports.createSession = (req, res, next) => {
 // Add additional authentication middleware functions below
 /************************************************************/
 
-
+module.exports.verifySession = (req, res, next) => {
+  //if valid session (req.session.userId), call next
+  if (req.session.userId) {
+    next();
+    //else, redirect to login
+  } else {
+    res.redirect('/login');
+  }
+};
 
