@@ -3,52 +3,83 @@ const Promise = require('bluebird');
 
 module.exports.createSession = (req, res, next) => {
   //Find out if there's a hash in the cookie
-    //Check if req.cookies.shortlyId exists
-    if (req.cookies.shortlyId) {
-      //if it exists set sessionHash to shortlyId value
-      let hash = req.cookies.shortlyId;
-      // get hash from models.Sessions (returns promise)
-      models.Sessions.get({ hash })
-        .then((session) => {
-          if (session) {
-            req.session = session;
-            let test = res.cookie('shortlyId', req.session.hash);
-            console.log(test);
-          }
+  //Check if req.cookies.shortlyId exists
+  //creates a new hash for each new session
+  let hash = req.cookies.shortlyid;
+  if (hash) {
+    models.Sessions.get({ hash })
+      .then((session) => {
+        if (session) {
+          //assigns a session object to the request if a session already exists
           //if session exists get userId
-        })
-      }
-
-        //.then(session)
-          //req.session = session
-          //res.cookie('shortlyId', req.session.hash)
-          //set id to session.userId
-          //if id exists then set req.session.userId to id
-          //get id from users table (returns promise)
-            //then(userData)
-              //set req.session.user to object with k/v pair username: userData.username
-
+          req.session = session;
+          //sets a new cookie on the response when a session is initialized
+          //req.cookies.shortlyId
+          res.cookie('shortlyid', req.session.hash);
+          let id = session.userId; //not null when session is assigned to user
+          if (id) {
+            req.session.userId = id;
+            models.Users.get({ id })
+              .then((user) => {
+                //username connected to id of session
+                req.session.user = { username: user.username };
+                next();
+              });
+          } else { // when userId is null
+            next();
+          }
+        } else {
+          //if it doesnt exist create a session (models.sessions.create())
+          models.Sessions.create()
+            //assigns a username and userId property to the session object if the session is assigned to a user
+            .then((data) => {
+              let id = data.insertId;
+              return models.Sessions.get({ id });
+            })
+            .then((session) => {
+              req.session = session;
+              //clears and reassigns a new cookie if there is no session assigned to the cookie
+              //set cookie on response w/ object with k/v pair shortlyid : req.session.hash
+              res.cookie('shortlyid', req.session.hash);
+              next();
+            });
+        }
+      });
+  } else {
+    //initializes a new session when there are no cookies on the request
     //if it doesnt exist create a session (models.sessions.create())
-
-
-
-
-
-  next();
-
-  //get parsed cookie
-
-  //check if there is a session hash - if no, or if invalid create hash, send to server in req and res objects
-  //if valid hash - send to server in req and res objects
+    models.Sessions.create()
+      .then((data) => {
+        console.log('data after creating session', data);
+        //assigns a username and userId property to the session object if the session is assigned to a user
+        let id = data.insertId;
+        return models.Sessions.get({ id });
+      })
+      .then((session) => {
+        req.session = session;
+        res.cookie('shortlyid', req.session.hash);
+      })
+      .then(() => {
+        let username = req.body.username;
+        req.session.user = { username };
+        return models.Users.get({ username });
+      })
+      .then((user) => {
+        if (user && user.id) {
+          req.session.userId = user.id;
+        }
+        next();
+      });
+  }
 };
 
 //NOTES FROM TEST
 //initializes a new session when there are no cookies on the request
-  //req.cookies.shortlyId
-  //cookies['shortlyid'] must exist
+//req.cookies.shortlyId
+//cookies['shortlyid'] must exist
 
 //sets a new cookie on the response when a session is initialized
-  //req.cookies.shortlyId
+//req.cookies.shortlyId
 
 //assigns a session object to the request if a session already exists
 
